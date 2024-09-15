@@ -1,5 +1,5 @@
 <style>
-h2{border-bottom : none;} 
+/* h2{border-bottom : none;}  */
 /* td{border: 5px solid;} */
 th{border: 5px solid;font-weight:normal;}
 img{border: 2px dashed;}
