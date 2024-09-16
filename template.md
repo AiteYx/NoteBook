@@ -1,8 +1,12 @@
 <style>
-img {border:2px dashed; width: 500px}
-/* h2  {border-bottom:none;}  */
-/* 个性化表头样式。html 表格无法使用 latex，而 markdown 简单表格写法可以用 latex。 */
-/* td{border: 5px solid;} */
+/* 图片全局设置 */
+img {border:2px dashed; width: 500px} 
+/* 个性化表头样式 */
 th  {border:5px solid; font-weight:normal;}
 </style>
+
+# 图文平行组件
+html 标签里面无法使用 latex。搭配表头个性化设置，让看起来只有一行
+|<p style="width:150px">哈哈</p>|<img src="" width=500/>|
+|-|-|
 
