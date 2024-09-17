@@ -1,4 +1,4 @@
-<style>img{border:2px dashed;} th{border:5px solid; font-weight:normal;}</style>
+<style>img{border:2px dashed;} th{border:1px solid; font-weight:normal;}</style>
 
 # Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
 https://arxiv.org/abs/2005.11401
@@ -6,8 +6,9 @@ https://arxiv.org/abs/2005.11401
 2. https://zhuanlan.zhihu.com/p/493577057
 
 ## 摘要
-|<p style="width:350px">以往的不足：LLM 访问和精确操纵边际知识的能力有限。在知识密集型任务中，性能落后于特定任务的架构。此外，实时更新知识仍然是悬而未决的问题。<br><br>本文创新：探索了一种 RAG 的通用微调方案。比较了两种 RAG 范式，一种以整个生成序列使用相同的检索段落为条件，另一种可以为每个标记使用不同的段落。<br><br>实验验证：在三个 Open-QA 任务上设置实验，优于 seq2seq 模型和特定于任务的检索和提取架构。对于语言生成任务，RAG 模型生成的语言更具体、更多样、更真实。</p>|<img src="./RAG-KI-NLP/image.png" width=700/>|
-|-|-|
+以往的不足：LLM 访问和精确操纵边际知识的能力有限。在知识密集型任务中，性能落后于特定任务的架构。此外，实时更新知识仍然是悬而未决的问题。<br>本文创新：探索了一种 RAG 的通用微调方案。比较了两种 RAG 范式，一种以整个生成序列使用相同的检索段落为条件，另一种可以为每个标记使用不同的段落。<br>实验验证：在三个 Open-QA 任务上设置实验，优于 seq2seq 模型和特定于任务的检索和提取架构。对于语言生成任务，RAG 模型生成的语言更具体、更多样、更真实。
+
+<img src="./RAG-KI-NLP/image.png" width=700/>
 
 ### 任务定义
 检索器 $p_\eta (z|x)$参数为$\eta$，基于输入 query x 检索 topk 截断的段落。生成器$p_\theta (y_i|x,z,y_{1:i-1})$生成基于输入 x、z 和历史生成$y_{1:i-1}$生成当前时刻的 token $y_i$。定义如下两种 RAG 范式：
@@ -54,7 +55,7 @@ https://arxiv.org/abs/2005.11401
     2. 评价指标：分类常用的准确率、精准度
 
 实验结果
-|<p style="width:150px">1. open-QA<br>实现了 SOTA，而且没有昂贵的 MLM 预训练（REALM T5+SSM 有）<br>生成器和检索器都没达到最先进，但组合起来最先进<br><br>2. Abstractive-QA：实现了 SOTA，幻觉更少，更多样化（表 5）。表 3 是一些生成样例<br><br>3. Jeopardy Question Generation<br>RAG-Token 最优秀。表 4 展示人类评估效果，RAG 的事实性鹤立鸡群。表 3 是一些样例<br>RAG-Token 生成效果分析（图 2），看到有些词从其他高相关文档生成<br><br>4. Fact Verification：<br>与 SOTA 相差一部分，但 RAG 对检索结果没有昂贵的监督训练<br>也评估了 RAG 检索文件是否与 FEVER 中注释为黄金证据的文件相对应。我们计算了RAG检索到的前k个文档和黄金证据注释之间的文章标题重叠。我们发现，在71%的情况下，检索到的顶部文档来自一篇金文章，在90%的情况下在检索到的前10篇文章中都有一篇金论文<br><br>5. 消融实验：表 6 ，检索能改善所有其他任务的结果，特别是对于开放域 QA。FVR 分类任务更关注实体<br><br>6. 检索文档数量与效果之间的关系：图 3</p>|<img src="./RAG-KI-NLP/image-4.png" width=700/><br><img src="./RAG-KI-NLP/image-5.png" width=700/><br><img src="./RAG-KI-NLP/image-6.png" width=300/> <img src="./RAG-KI-NLP/image-7.png" width=300/><br><img src="./RAG-KI-NLP/image-8.png" width=700/><br><img src="./RAG-KI-NLP/image-9.png" width=700/><br><img src="./RAG-KI-NLP/image-10.png" width=700/>|
+|<p style="width:150px;font-weight:normal;">1. open-QA<br>实现了 SOTA，而且没有昂贵的 MLM 预训练（REALM T5+SSM 有）<br>生成器和检索器都没达到最先进，但组合起来最先进<br><br>2. Abstractive-QA：实现了 SOTA，幻觉更少，更多样化（表 5）。表 3 是一些生成样例<br><br>3. Jeopardy Question Generation<br>RAG-Token 最优秀。表 4 展示人类评估效果，RAG 的事实性鹤立鸡群。表 3 是一些样例<br>RAG-Token 生成效果分析（图 2），看到有些词从其他高相关文档生成<br><br>4. Fact Verification：<br>与 SOTA 相差一部分，但 RAG 对检索结果没有昂贵的监督训练<br>也评估了 RAG 检索文件是否与 FEVER 中注释为黄金证据的文件相对应。我们计算了RAG检索到的前k个文档和黄金证据注释之间的文章标题重叠。我们发现，在71%的情况下，检索到的顶部文档来自一篇金文章，在90%的情况下在检索到的前10篇文章中都有一篇金论文<br><br>5. 消融实验：表 6 ，检索能改善所有其他任务的结果，特别是对于开放域 QA。FVR 分类任务更关注实体<br><br>6. 检索文档数量与效果之间的关系：图 3</p>|<img src="./RAG-KI-NLP/image-4.png" width=700/><br><img src="./RAG-KI-NLP/image-5.png" width=700/><br><img src="./RAG-KI-NLP/image-6.png" width=300/> <img src="./RAG-KI-NLP/image-7.png" width=300/><br><img src="./RAG-KI-NLP/image-8.png" width=700/><br><img src="./RAG-KI-NLP/image-9.png" width=700/><br><img src="./RAG-KI-NLP/image-10.png" width=700/>|
 |-|-|
 
 
