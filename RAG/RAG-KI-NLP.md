@@ -19,7 +19,7 @@ https://arxiv.org/abs/2005.11401
 1. 密集检索器 DPR，DPR 是一个双塔架构
     1. $p_\eta (z|x) \propto \exp(\rm{d}(z)^T\rm{q}(x))$，其中$\rm{d}(z)=BERT_d(z),\rm{q}(x)=BERT_q(x)$
     2. 使用预训练的 DPR 模型初始化文档索引
-    3. 检索的文档是什么格式？？？passage？是什么样子呢？文中没描述
+    3. passage：一段话，检索返回的是截断的
 2. topk 的快速选择基于 MIPS，实现 sub-linear 时间
     1. 基于脸书的开源相似性搜索库 Faiss，论文 Billion-scale similarity search with gpus
     2. 一种用于 k-selection 的设计，以积量化（product quantization）为基础的暴力计算、近似和压缩域搜索提出优化设计。可在 GPU 上实现十亿规模级的相似性搜索
@@ -33,10 +33,11 @@ https://arxiv.org/abs/2005.11401
         2. 针对每个生成序列，用其生成概率与$p_\eta (z|x)$点乘得到一个概率 score，取最大值对应的序列为最终输出
    
 ## 训练
-1. 端到端非监督训练，不直接监督哪个文档应该被检索
+只有微调，给定输入输出对 $(x_i,y_i)$，微调模型
+1. 端到端微调，不直接监督哪个文档应该被检索
     1. 固定检索器双塔中的 BERTd，仅训练 BERTq 和 BART
     2. 区别于 REALM，推测文档索引没有很强的效果
-2. 基于输入输出对交叉熵损失训练模型，Adam
+2. 基于输入输出对 $(x_i,y_i)$ ，采用交叉熵损失训练检索和生成模型，Adam
 
 ## 实验
 针对四类下游任务进行实验，Open-QA、Abstractive-QA、Jeopardy-QG 和 Fact Verification。
@@ -44,7 +45,7 @@ https://arxiv.org/abs/2005.11401
     1. 在四类数据集上实验：NaturalQuestions (NQ)、TriviaQA (TQA)、WebQuestions (WQ) 和 CuratedTrec (CT)，TQA 使用了两种不同的测试集
     2. 评价指标：Exact Match (EM)
 2. Abstractive-QA：抽象问答任务，主要测试自然语言生成效果
-    1. 数据集：MSMARCO NLG task v2.1
+    1. 数据集：MSMARCO NLG task v2.1，https://github.com/microsoft/MSMARCO-Question-Answering
     2. 评价指标：EM？
 3. Jeopardy-Question Gernation：评估在非 QA 任务下 RAG 系统的生成能力
     1. 数据集：SearchQA、

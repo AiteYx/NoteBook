@@ -6,7 +6,7 @@ img{border: 2px dashed;}
 </style>
 
 # SELF-RAG: LEARNING TO RETRIEVE, GENERATE, AND CRITIQUE THROUGH SELF-REFLECTION
-https://arxiv.org/abs/2310.11511
+https://arxiv.org/abs/2310.11511 \
 https://github.com/AkariAsai/self-rag
 
 ## 摘要
@@ -19,8 +19,8 @@ https://github.com/AkariAsai/self-rag
 |-|-|
 
 ## 检索
-1. 检索器 R 使用现成的 Contriever-MS MARCO 模型，对于每个输入检索 top5 结果
-2. passage 具体是怎么处理的？没说，推测是按照以往论文常用的方法，约定俗成了
+1. 检索器 R 使用现成的 Contriever 模型，在 MS MARCO 上微调，对于每个输入检索 top5 结果
+2. passage：推测是按照以往论文常用的方法，约定俗成了
 
 ## 生成
 |<div style="width:200px">1. $M$和$M_{gen}$是两个单独的模型 <br><br>2. 第5、6行中，$M$对于每个检索的$d$都进行生成，因此并行的生成<br><br>3. 迭代的生成直到$\rm{Retrieve=No}$</div>| <img src="./Self-RAG/image-1.png" width=600/> |
@@ -29,13 +29,12 @@ https://github.com/AkariAsai/self-rag
 1. 生成模型使用 Llama2 7B|13B，评论模型使用 Llama2 7B
 2. 推理阶段
     1. 按需推理，如果要求实事性则更多的检索（降低特殊 token $\rm{Retrieve}$的阈值），反之在开发回答任务可以减少检索需求
-    2. decoder
-        1. 设定在第$t$个阶段，检索了$K$个 passage，生成器$M$并行处理检索的 passage 得到$K$个连续输出
-        2. 在每个阶段，使用$beam size=B$的搜索，获取 top-B 片段，并在生成最后阶段返回最优
-        3. 每个$y_t$相对于每个检索到的 d 有一个得分$S$，$S$是三类 Critique token 概率的线性加权和。设$G$是 token group，$S=s_t^G$，则计算如下 
-            * <img src="./Self-RAG/image-2.png" width=350/>
-            * <img src="./Self-RAG/image-3.png" width=150/>
-            * 上述参数矩阵$w^G$可以控制三类 token 的权值从而实现个性化推理
+    2. Tree-decoder
+        1. 在阶段 t，对于第 k 个检索到的 passage，使用$beam size=B$的搜索，并最后返回最优
+        2. 在第$t$阶段，共有$K$个检索的 passage，生成器$M$并行处理得到$K$个连续输出
+        3. 在阶段 t 中，$y_t$相对于每个检索到的 d 有一个得分$S$，$S$是三类 Critique token 概率的线性加权和。设$G$是 token group，$S=s_t^G$，则计算如下 
+            * <img src="./Self-RAG/image-2.png" width=350/> <img src="./Self-RAG/image-3.png" width=150/>
+            * 超参数$w^G$可以控制三类 token 的权重，从而实现个性化
 
 ## 训练
 |<div style="width:200px">评论模型$C$基于检索到的 passage 预测 reflection tokens，用于评估检索到的 passage 和任务输出的质量（？？？）。reflection tokens 和检索数据一起用于生成模型$G$的训练。然后训练生成模型$G$，确保生成模型可以自行生成 reflection token。因此首先需要构造可监督数据集，去训练评论模型$C$和生成模型$G$。</div>|<img src="./Self-RAG/image-4.png" width=600/>|
@@ -46,17 +45,17 @@ https://github.com/AkariAsai/self-rag
     2. 不同 reflection token 的数据集，先随机抽样构造$\{X^{sample},Y^{sample}\}$，然后使用不同的提示指令生成 reflection token。人工验证结果
     3. 每类 reflection token 收集了 4k-20k 监督训练数据
 2. 评论模型$C$训练
-    1. 对于每类 reflection token，就是一个分类任务，给定输入对$x,y$，输出该 reflection token 下的类别，损失函数为交叉熵
-    2. 例如：对与$\rm{IsREL}$类，输入$x,d$，输出为两个类别概率$p_{relevant},p_{irrelevant}$
-    3. 最终效果比 GPT4 高 90%
+    1. next token predict loss 训练评论模型<br><img src="./Self-RAG/image-21.png" width=500/>
+    2. 最终效果比 GPT4 高 90%
 3. 构造生成模型数据集$D_{gen}$：基于检索的文档、评论模型$C$和输入输出对$(x,y)$
-    1. 对于文本片段$y_t$，$C$先预测是否需要检索（即 token $\rm{Retrieve=Yes}$）
+    1. 对于文本片段$y_t$，$C$先预测是否需要检索，输入为 x 或者 $x,y_{t-1}$（即 $\rm{Retrieve=Yes}$）
     2. 如果要检索，并令$R$检索 topk $D$。然后对于检索的每个 passage，$C$预测与$x$的相关性（即 token $\rm{IsREL=?}$）
     3. 对于相关的 passage，$C$预测该 passage 是否对答案启支撑的作用（即 token $\rm{IsSUP=?}$）
-    4. $\rm{IsSUP=?},\rm{IsREL=?}$被追加到检索或者生成结果之后
-    5. 在最终的输出 $y_T$ 之后，$C$预测上述所有的$\rm{IsUSE}$ token。然后，上述数据追加到数据集$D_{gen}$，数据集新增一条数据
+    4. 将最优检索结果$\rm{IsSUP=?},\rm{IsREL=?}$被追加到检索或者生成结果 $y_t$ 之后
+    5. 进入下一个文本片段 $y_{t+1}$ 的生成，迭代到模型生成 END
+    6. 在输出最终的 $y_T$ 之后，$C$预测$\rm{IsUSE}$ token。然后，上述数据追加到数据集$D_{gen}$，数据集新增一条数据
 4. 生成模型$G$训练
-    1. 不仅仅生成$y_t$，也要生成 reflection token（是生成不是上述的分类），因此只需要标准 next token objective
+    1. 不仅仅生成$y_t$，也要生成 reflection token，标准 next token preidct loss
     2. 词表要扩充几个特殊 token。loss mask 检索到的 passage（不希望梯度传到这）
 
 ## 实验

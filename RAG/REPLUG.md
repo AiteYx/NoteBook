@@ -17,16 +17,16 @@ https://arxiv.org/abs/2301.12652
 给定输入文本 $x$，检索器 $R$ 从额外知识库 $\mathcal{D}=\{d1,...,d_m\}$ 检索相关文档。对于每一个检索到的文档，先和输入 concatenation，再通过 LM 生成答案。生成过程对于检索到的文档来说是并行的。
 
 ## 检索
-检索器 $R$ 是双塔 encoder 架构，Contriever 模型。对于知识库 $\mathcal{D}=\{d1,...,d_m\}$ 中的文档 $d$，将其最输入双塔模型得到的最后一个隐藏层的平均池化向量 $\rm E(d)$。输入文本 $x$ 经过同样处理得到 $\rm E(x)$，二者相似度为向量余弦值 $s(d,x)=\rm{cos}(\rm E(d),\rm E(x))$。为了高效检索 topk 文档，使用 FAISS 算法构建向量索引。
+检索器 $R$ 是双塔 encoder 架构，Contriever 模型。对于知识库 $\mathcal{D}=\{d1,...,d_m\}$ 中的文档 $d$，将其输入双塔模型得到向量 $\rm E(d)$。输入文本 $x$ 经过同样处理得到 $\rm E(x)$，二者相似度为向量余弦值 $s(d,x)=\rm{cos}(\rm E(d),\rm E(x))$。为了高效检索 topk 文档，使用 FAISS 算法构建向量索引。
 
 ## 生成
-生成式模型使用
-1. 生成模型的输入装载策略
+**（这是只输出一个 token 概率，那么生成连续 token？？）**
+1. 推理阶段
     1. 假设 $\mathcal{D'}\subset \mathcal{D}$ 包含最相关的 topk 文档，相似性得分 $s(d,x)$
     2. 每个 $d$ 分别添加到 $x$ 前面，然后丢入 LM，并行的得到 $k$ 个下一个 token 的概率 $p(y|d\circ x)$
     3. 然后将 $k$ 个概率求加权平均值，得到最终的该生成 token 概率 $p(y|x, \mathcal{D'})$
     4. 第 $i$ 个加权平均的权重系数 $\lambda(d,x)$，就是第 $i$ 个文档和 $x$ 的相关性得分的归一化概率
-    5. <img src="./REPLUG/image-1.png" height=50/> <img src="./REPLUG/image-2.png" height=50 />
+    5. <img src="./REPLUG/image-1.png" height=50/> <img src="./REPLUG/image-2.png" height=50 /> <br> <img src="./REPLUG/image-10.png" width=700/>
 
 ## 训练
 1. 训练数据
@@ -58,7 +58,7 @@ https://arxiv.org/abs/2301.12652
 在三个下游任务上进行了评估实验。
 1. LM
     1. 数据集：Pile，来自网页、论文和代码等文本源
-    2. 评价指标：BPB，每个 UTF-8 编码字节 1 位（**啥玩意**）
+    2. 评价指标：$BPB=(L_T/L_B)\log_2(e^\mathcal L)=(L_T/L_B)\mathcal L/\ln 2$；$L_T$代表token长度，$L_B$代表字节长度
     * <img src="./REPLUG/image-7.png" width=700/>
 2. MMLU
     1. 数据集：Massive Multi-task Language Understanding，多选的 QA 数据集，来自 57 个任务并分为四个类别 humani- ties、STEM、social sciences and other
