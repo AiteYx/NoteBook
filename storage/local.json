@@ -1,0 +1,39 @@
+{
+  "local-fileposition": {
+    "20200812220555-lj3enxa": {
+      "endId": "20240508001403-j8ceveg",
+      "focusEnd": 0,
+      "focusId": "20201225220955-f8lsff2",
+      "focusStart": 0,
+      "rootId": "20200812220555-lj3enxa",
+      "scrollTop": 0,
+      "startId": "20210528115012-vst5lwt"
+    },
+    "20240928010204-ln4koit": {
+      "endId": "20240928010213-oj4grqd",
+      "focusEnd": 3,
+      "focusId": "20240928010213-oj4grqd",
+      "focusStart": 3,
+      "rootId": "20240928010204-ln4koit",
+      "scrollTop": 0,
+      "startId": "20240928010204-2mduprq"
+    },
+    "20240928011923-if9oj2s": {
+      "endId": "20240928011923-76l1ogz",
+      "focusEnd": 4,
+      "focusId": "20240928011923-76l1ogz",
+      "focusStart": 4,
+      "rootId": "20240928011923-if9oj2s",
+      "scrollTop": 0,
+      "startId": "20240928011923-76l1ogz"
+    }
+  },
+  "local-filespaths": [
+    {
+      "notebookId": "20240928011919-tsgjorl",
+      "openPaths": [
+        "/20240928011923-if9oj2s.sy"
+      ]
+    }
+  ]
+}
